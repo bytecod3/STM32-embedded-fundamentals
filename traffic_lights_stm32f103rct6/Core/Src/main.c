@@ -21,6 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdio.h>
 
 /* USER CODE END Includes */
 
@@ -40,6 +41,8 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+TIM_HandleTypeDef htim2;
+
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
@@ -49,6 +52,7 @@ UART_HandleTypeDef huart1;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_TIM2_Init(void);
 static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
@@ -78,14 +82,9 @@ const uint8_t state_durations[] = {30, 5, 35, 30, 5, 35};
 volatile uint32_t timer_count = 0;
 TrafficState current_state = NS_GREEN; /* starting state */
 
-/* allow setting of a GPIO state */
-void gpio_set(uint8_t pin, uint8_t value)
-{
-	HAL_GPIO_WritePin(GPIOx, GPIO_Pin, PinState);
-}
-
 /* timer init 1 second */
 void timer_init() {
+
 
 }
 
@@ -113,21 +112,21 @@ void set_leds(TrafficState state) {
 
 		case NS_RED:
 			HAL_GPIO_WritePin(ns_red_GPIO_Port, ns_red_Pin, 1);
-			HAL_GPIO_WritePin(ew_green_GPIO_Port, es_green_Pin, 1);
+			HAL_GPIO_WritePin(ew_green_GPIO_Port, ew_green_Pin, 1);
 			break;
 
 		case EW_RED:
-			HAL_GPIO_WritePin(ew_red_GPIO_Port, es_red_Pin, 1);
+			HAL_GPIO_WritePin(ew_red_GPIO_Port, ew_red_Pin, 1);
 			HAL_GPIO_WritePin(ns_green_GPIO_Port, ns_green_Pin, 1);
 			break;
 
 		case EW_YELLOW:
-			HAL_GPIO_WritePin(ew_yellow_GPIO_Port, es_yellow_Pin, 1);
+			HAL_GPIO_WritePin(ew_yellow_GPIO_Port, ew_yellow_Pin, 1);
 			HAL_GPIO_WritePin(ns_red_GPIO_Port, ns_red_Pin, 1);
 			break;
 
 		case EW_GREEN:
-			HAL_GPIO_WritePin(ew_green_GPIO_Port, es_green_Pin, 1);
+			HAL_GPIO_WritePin(ew_green_GPIO_Port, ew_green_Pin, 1);
 			HAL_GPIO_WritePin(ns_red_GPIO_Port, ns_red_Pin, 1);
 			break;
 	}
@@ -193,8 +192,18 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_TIM2_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
+  char uart_buf[50];
+  int uart_buf_len;
+  uint16_t timer_val;
+
+  uart_buf_len = sprintf(uart_buf, "Finite state machine\r\n");
+  HAL_UART_Transmit(&huart1, (uint8_t*)uart_buf, uart_buf_len, 100);
+
+  /* START TIMER */
+  HAL_TIM_Base_Start(&htim2);
 
   timer_init();
   set_leds(current_state);
@@ -206,7 +215,25 @@ int main(void)
   while (1)
   {
 
-	 traffic_light_fsm();
+	  /* get the current time */
+	  timer_val = __HAL_TIM_GET_COUNTER(&htim2);
+
+	  /* wait for 50 ms */
+	  HAL_GPIO_WritePin(ns_red_GPIO_Port, ns_red_Pin, GPIO_PIN_SET);
+	  HAL_Delay(50);
+	  HAL_GPIO_WritePin(ns_red_GPIO_Port, ns_red_Pin, GPIO_PIN_RESET);
+
+	  /* get time elapsed */
+	  timer_val = __HAL_TIM_GET_COUNTER(&htim2) - timer_val;
+
+	  uart_buf_len = sprintf(uart_buf, "%u us\r\n", timer_val);
+	  HAL_UART_Transmit(&huart1, (uint8_t*)uart_buf, uart_buf_len , 100);
+
+	  // wait
+	  HAL_Delay(1000);
+
+
+	 //traffic_light_fsm();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -226,10 +253,13 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL2;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -239,7 +269,7 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
@@ -248,6 +278,51 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief TIM2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM2_Init(void)
+{
+
+  /* USER CODE BEGIN TIM2_Init 0 */
+
+  /* USER CODE END TIM2_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM2_Init 1 */
+
+  /* USER CODE END TIM2_Init 1 */
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 16 - 1;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 65536 - 1;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM2_Init 2 */
+
+  /* USER CODE END TIM2_Init 2 */
+
 }
 
 /**
@@ -302,34 +377,34 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(ew_red_GPIO_Port, ew_red_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, ew_yellow_Pin|ew_green_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, ew_yellow_Pin|ew_green_Pin|ns_red_Pin|ns_yellow_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(ns_red_GPIO_Port, ns_red_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(ns_green_GPIO_Port, ns_green_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, ew_red_Pin|ns_green_Pin|ns_yellow_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : ew_red_Pin */
-  GPIO_InitStruct.Pin = ew_red_Pin;
+  /*Configure GPIO pins : ew_yellow_Pin ew_green_Pin */
+  GPIO_InitStruct.Pin = ew_yellow_Pin|ew_green_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(ew_red_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : ew_yellow_Pin ew_green_Pin ns_red_Pin ns_yellow_Pin */
-  GPIO_InitStruct.Pin = ew_yellow_Pin|ew_green_Pin|ns_red_Pin|ns_yellow_Pin;
+  /*Configure GPIO pin : ns_red_Pin */
+  GPIO_InitStruct.Pin = ns_red_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(ns_red_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : ew_red_Pin ns_green_Pin ns_yellow_Pin */
+  GPIO_InitStruct.Pin = ew_red_Pin|ns_green_Pin|ns_yellow_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : ns_green_Pin */
-  GPIO_InitStruct.Pin = ns_green_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(ns_green_GPIO_Port, &GPIO_InitStruct);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
