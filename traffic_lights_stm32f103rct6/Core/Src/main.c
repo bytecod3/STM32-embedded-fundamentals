@@ -203,7 +203,8 @@ int main(void)
   HAL_UART_Transmit(&huart1, (uint8_t*)uart_buf, uart_buf_len, 100);
 
   /* START TIMER */
-  HAL_TIM_Base_Start(&htim2);
+  //HAL_TIM_Base_Start(&htim2);
+  HAL_TIM_Base_Start_IT(&htim2); // start in interrupt mode
 
   timer_init();
   set_leds(current_state);
@@ -216,21 +217,21 @@ int main(void)
   {
 
 	  /* get the current time */
-	  timer_val = __HAL_TIM_GET_COUNTER(&htim2);
+//	  timer_val = __HAL_TIM_GET_COUNTER(&htim2);
 
 	  /* wait for 50 ms */
-	  HAL_GPIO_WritePin(ns_red_GPIO_Port, ns_red_Pin, GPIO_PIN_SET);
-	  HAL_Delay(50);
-	  HAL_GPIO_WritePin(ns_red_GPIO_Port, ns_red_Pin, GPIO_PIN_RESET);
+//	  HAL_GPIO_WritePin(ns_red_GPIO_Port, ns_red_Pin, GPIO_PIN_SET);
+//	  HAL_Delay(50);
+//	  HAL_GPIO_WritePin(ns_red_GPIO_Port, ns_red_Pin, GPIO_PIN_RESET);
 
 	  /* get time elapsed */
-	  timer_val = __HAL_TIM_GET_COUNTER(&htim2) - timer_val;
+//	  timer_val = __HAL_TIM_GET_COUNTER(&htim2) - timer_val;
 
-	  uart_buf_len = sprintf(uart_buf, "%u us\r\n", timer_val);
-	  HAL_UART_Transmit(&huart1, (uint8_t*)uart_buf, uart_buf_len , 100);
+//	  uart_buf_len = sprintf(uart_buf, "%u us\r\n", timer_val);
+//	  HAL_UART_Transmit(&huart1, (uint8_t*)uart_buf, uart_buf_len , 100);
 
 	  // wait
-	  HAL_Delay(1000);
+//	  HAL_Delay(1000);
 
 
 	 //traffic_light_fsm();
@@ -253,13 +254,12 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-  RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL2;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI_DIV2;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL4;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -299,11 +299,11 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 16 - 1;
+  htim2.Init.Prescaler = 1600 - 1;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 65536 - 1;
+  htim2.Init.Period = 10000 - 1 ;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
   {
     Error_Handler();
@@ -412,6 +412,15 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+/* timer 2 elapsed callback */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	/* check which timer has elapsed */
+	if(htim == &htim2) {
+		HAL_GPIO_TogglePin(ew_green_GPIO_Port, ew_green_Pin);
+	}
+}
 
 /* USER CODE END 4 */
 
