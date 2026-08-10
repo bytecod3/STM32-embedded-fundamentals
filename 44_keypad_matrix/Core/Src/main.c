@@ -120,23 +120,21 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-	  for(int i =0; i< NUM_COLS; i++ ) { // iterate on columns
-		  GPIO_InitTypeDef GPIO_InitStruct = {0};   // set the column to low
-		  GPIO_InitStruct.Pin = col_pins[i];
-		  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
-		  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+	  for(int i =0; i< NUM_COLS; i++ ) {
 
-		  HAL_GPIO_WritePin(GPIOA, col_pins[i], GPIO_PIN_RESET);
+		  HAL_GPIO_WritePin(GPIOB, col_pins[i], GPIO_PIN_RESET); // write column low
 
 		  for(int j = 0; j < NUM_ROWS; j++)	 {
-			  int s = HAL_GPIO_ReadPin(GPIOA, row_pins[j]);
+			  int s = HAL_GPIO_ReadPin(GPIOA, row_pins[j]); // sample all the rows in that column
 
 			  if(s == 0) {
 				  // debounce
-				  HAL_Delay(50);
+				  HAL_Delay(70);
+
+				  s = HAL_GPIO_ReadPin(GPIOA, row_pins[j]);
 
 				  if(s == 0) { // re-sample
-					  char c = key_map_arr[i][j];
+					  char c = key_map_arr[j][i];
 
 					  sprintf(uart_buffer, "Pressed: %c \r\n", c);
 
@@ -146,10 +144,8 @@ int main(void)
 			  }
 		  } // end row scan
 
-		  // reset column to floating input
-		  GPIO_InitStruct.Pin = col_pins[i];
-		  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-		  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+		  // release the column to high
+		  HAL_GPIO_WritePin(GPIOA, col_pins[i], GPIO_PIN_SET);
 
 
 	  } // end column scan
@@ -251,16 +247,20 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, C4_Pin|C3_Pin|C2_Pin|C1_Pin, GPIO_PIN_RESET);
+
   /*Configure GPIO pins : C4_Pin C3_Pin C2_Pin C1_Pin */
   GPIO_InitStruct.Pin = C4_Pin|C3_Pin|C2_Pin|C1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pins : R4_Pin R3_Pin R2_Pin R1_Pin */
   GPIO_InitStruct.Pin = R4_Pin|R3_Pin|R2_Pin|R1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
