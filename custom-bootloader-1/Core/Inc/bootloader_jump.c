@@ -29,10 +29,10 @@ void jump_to_application(void) {
 	SysTick->VAL = 0;
 
 	// set main stack pointer
+	// allows the application to run from its own stack
 	__set_MSP(app_stack);
 
 	// jump to application
 	app_entry();
-
 
 }
