@@ -22,7 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "flash_layout.h"
-
+#include "string.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -78,8 +78,8 @@ int main(void)
 
   /* USER CODE BEGIN Init */
 
-  SCB->VTOR = APP_START_ADDR; // relocate the vector table
-  __enable_irq();		// irqs originally disabled by bootloader
+  SCB->VTOR = APP_START_ADDR; 	// relocate the vector table
+  __enable_irq();				// IRQs originally disabled by bootloader
 
   /* USER CODE END Init */
 
@@ -94,6 +94,9 @@ int main(void)
   MX_GPIO_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
+
+  char* msg = "Inside Application B**h";
+  HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), 100);
 
   /* USER CODE END 2 */
 
