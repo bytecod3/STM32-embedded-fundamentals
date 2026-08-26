@@ -5,8 +5,33 @@
  *      Author: edwin
  */
 #include "bootloader_jump.h"
+#include "app_header.h"
+
+#define APP_MAGIC_NUMBER 	(0xDEADBEEF)
 
 typedef void(*p_function)(void);
+
+/**
+ * validate the application metadata
+ */
+int bootloader_validate_app() {
+	uint32_t HEADER_ADDR = APP_HEADER_ADDR;
+	const app_header_t* app_hdr = (const app_header*) HEADER_ADDR;
+
+	// 1. check magic number
+	if(app_hdr->magic != APP_MAGIC_NUMBER) {
+		return 1;
+	}
+
+	// 2. check reset handler validity
+	uint32_t  rst_handler = *(volatile uint32_t*)(APP_START_ADDR + 4);
+	if(( rst_handler & 0xFF000000) != 0x08000000) {
+		return 2;
+	}
+
+	// app is valid, return 0
+	return 0;
+}
 
 void jump_to_application(void) {
 	uint32_t app_stack;
@@ -34,5 +59,4 @@ void jump_to_application(void) {
 
 	// jump to application
 	app_entry();
-
 }

@@ -10,6 +10,7 @@
 
 #include "flash_layout.h"
 
+int bootloader_validate_app();
 void jump_to_application(void);
 
 
