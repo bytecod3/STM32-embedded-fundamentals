@@ -1,0 +1,58 @@
+<mxfile host="Electron">
+  <diagram name="Page-1" id="tzuCN86S7aKuXjkrhe8W">
+    <mxGraphModel dx="582" dy="384" grid="1" gridSize="4" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="FCcdFT4ch4prZpENbgyl-3" edge="1" parent="1" source="FCcdFT4ch4prZpENbgyl-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="384" y="292" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="FCcdFT4ch4prZpENbgyl-5" edge="1" parent="1" source="FCcdFT4ch4prZpENbgyl-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="280" y="358" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="FCcdFT4ch4prZpENbgyl-7" edge="1" parent="1" source="FCcdFT4ch4prZpENbgyl-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="384" y="424" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="FCcdFT4ch4prZpENbgyl-2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;fillColor=#d0cee2;" value="device client&lt;div&gt;(stores oldstate)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="324" y="328" as="geometry" />
+        </mxCell>
+        <mxCell id="FCcdFT4ch4prZpENbgyl-12" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#fad7ac;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;strokeColor=#b46504;" value="Bouncing device" vertex="1">
+          <mxGeometry height="104" width="140" x="140" y="316" as="geometry" />
+        </mxCell>
+        <mxCell id="FCcdFT4ch4prZpENbgyl-13" parent="FCcdFT4ch4prZpENbgyl-12" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="device_state" vertex="1">
+          <mxGeometry height="26" width="140" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="FCcdFT4ch4prZpENbgyl-14" parent="FCcdFT4ch4prZpENbgyl-12" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="send_event()" vertex="1">
+          <mxGeometry height="26" width="140" y="52" as="geometry" />
+        </mxCell>
+        <mxCell id="FCcdFT4ch4prZpENbgyl-15" parent="FCcdFT4ch4prZpENbgyl-12" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="get_state()" vertex="1">
+          <mxGeometry height="26" width="140" y="78" as="geometry" />
+        </mxCell>
+        <mxCell id="FCcdFT4ch4prZpENbgyl-16" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#b1ddf0;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;strokeColor=#10739e;" value="Application Client" vertex="1">
+          <mxGeometry height="52" width="160" x="320" y="424" as="geometry" />
+        </mxCell>
+        <mxCell id="FCcdFT4ch4prZpENbgyl-17" parent="FCcdFT4ch4prZpENbgyl-16" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="device_receive_state(state)" vertex="1">
+          <mxGeometry height="26" width="160" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="FCcdFT4ch4prZpENbgyl-20" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#fad7ac;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;strokeColor=#b46504;" value="Debouncing Timer" vertex="1">
+          <mxGeometry height="52" width="140" x="316" y="240" as="geometry" />
+        </mxCell>
+        <mxCell id="FCcdFT4ch4prZpENbgyl-21" parent="FCcdFT4ch4prZpENbgyl-20" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="delay(delay_time)" vertex="1">
+          <mxGeometry height="26" width="140" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="FCcdFT4ch4prZpENbgyl-26" parent="1" style="strokeWidth=1;shadow=0;dashed=0;align=center;html=1;shape=mxgraph.mockup.text.stickyNote2;fontColor=#666666;mainText=;fontSize=8;whiteSpace=wrap;fillColor=#ffffcc;strokeColor=#F62E00;" value="- Implemented in&amp;nbsp;&lt;div&gt;software or hardware&lt;br&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="40" width="160" x="306" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="FCcdFT4ch4prZpENbgyl-27" parent="1" style="strokeWidth=1;shadow=0;dashed=0;align=center;html=1;shape=mxgraph.mockup.text.stickyNote2;fontColor=#666666;mainText=;fontSize=8;whiteSpace=wrap;fillColor=#ffffcc;strokeColor=#F62E00;" value="&lt;div&gt;this is the hardware device we are&amp;nbsp;&lt;/div&gt;&lt;div&gt;trying to debounce&lt;/div&gt;" vertex="1">
+          <mxGeometry height="40" width="160" x="92" y="436" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
